@@ -20,6 +20,10 @@ class EpisodeExists(APIException):
     def __init__(self, title: str) -> None:
         self.title = title
 
+    @property
+    def status_code(self) -> int:
+        return 409
+
     def into_json(self) -> JSONResponse:
         return JSONResponse(
             status_code=409,
@@ -31,6 +35,10 @@ class EpisodeExists(APIException):
 class EpisodeNotFound(APIException):
     def __init__(self, id: int) -> None:
         self.id = id
+
+    @property
+    def status_code(self) -> int:
+        return 404
 
     def into_json(self) -> JSONResponse:
         return JSONResponse(

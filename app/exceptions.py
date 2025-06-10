@@ -7,6 +7,10 @@ from fastapi.responses import JSONResponse
 
 
 class APIException(HTTPException, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def status_code(self) -> int: ...
+
     @abc.abstractmethod
     def into_json(self) -> JSONResponse: ...
 

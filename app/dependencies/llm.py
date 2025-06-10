@@ -24,10 +24,10 @@ class LLMPrompter(abc.ABC):
     def prompt(self, prompt_sys: str, prompt_user: str) -> str: ...
 
 
-def get_prompter() -> Generator[LLMPrompter]:
+def get_prompter() -> LLMPrompter:
     # interchangeable logic
     deepseek = DeepSeekAPI(os.environ.get("DEEPSEEK_API_KEY"))
-    yield DeepSeekPrompter(deepseek)
+    return DeepSeekPrompter(deepseek)
 
 
 LLMDep = Annotated[LLMPrompter, Depends(get_prompter)]
@@ -37,6 +37,10 @@ LLMDep = Annotated[LLMPrompter, Depends(get_prompter)]
 class LLMException(APIException):
     def __init__(self, message: str) -> None:
         self.message = message
+
+    @property
+    def status_code(self) -> int:
+        return 500
 
     def into_json(self) -> JSONResponse:
         return JSONResponse(
