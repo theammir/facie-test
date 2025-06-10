@@ -1,7 +1,10 @@
+import dotenv
 from fastapi import FastAPI
 
 from . import dependencies, routers
 from .exceptions import init_handlers
+
+dotenv.load_dotenv()
 
 app = FastAPI()
 init_handlers(app)
