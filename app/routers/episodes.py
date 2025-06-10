@@ -17,6 +17,9 @@ router = APIRouter()
 
 @router.get("/episodes")
 async def get_episodes(session: SessionDep) -> list[PodcastEpisodeDB]:
+    """
+    Get all existing podcast episodes.
+    """
     return list(session.exec(select(PodcastEpisodeDB)).all())
 
 
@@ -25,6 +28,9 @@ async def get_episodes(session: SessionDep) -> list[PodcastEpisodeDB]:
     status_code=status.HTTP_201_CREATED,
 )
 async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEpisodeDB:
+    """
+    Add new podcast episode if doesn't already exist with similar name.
+    """
     if session.exec(
         select(PodcastEpisodeDB).where(PodcastEpisodeDB.title == episode.title)
     ).first():
@@ -38,9 +44,12 @@ async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEp
 
 
 @router.post("/episodes/{episode_id}/generate_alternative")
-async def generate_alternative_desc(
+async def generate_alternative(
     episode_id: int, payload: AltEpisodeRequest, session: SessionDep, llm: LLMDep
 ) -> AltEpisodeResponse:
+    """
+    Generate alternative title or description of a podcast episode by ID.
+    """
     db_episode = session.exec(
         select(PodcastEpisodeDB).where(PodcastEpisodeDB.id == episode_id)
     ).first()
