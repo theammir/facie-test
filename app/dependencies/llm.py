@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Annotated, Generator
+from typing import Annotated
 
 from deepseek import DeepSeekAPI
 from fastapi import Depends
@@ -15,8 +15,7 @@ PROMPT_MAX_TOKENS = 50
 
 
 def init_dependency() -> None:
-    if not os.environ.get("DEEPSEEK_API_KEY"):
-        raise RuntimeError("DEEPSEEK_API_KEY env variable required")
+    pass
 
 
 class LLMPrompter(abc.ABC):

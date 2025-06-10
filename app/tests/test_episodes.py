@@ -1,8 +1,9 @@
+import os
 from typing import Generator
 
+import dotenv
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel, StaticPool, create_engine
 
 from app.dependencies.database import get_session
@@ -15,8 +16,14 @@ class TestPrompter(LLMPrompter):
         return "TEST PROMPTER OUTPUT"
 
 
+@pytest.fixture(scope="session", autouse=True)
+def load_env() -> None:
+    env_file = dotenv.find_dotenv(".env.test", raise_error_if_not_found=True)
+    dotenv.load_dotenv(env_file, override=True)
+
+
 @pytest.fixture
-def session():
+def session() -> Generator[Session]:
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
