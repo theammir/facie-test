@@ -1,18 +1,23 @@
+import os
 from typing import Annotated, Generator
 
 from fastapi import Depends
+from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel, create_engine
 
 __all__ = ("init_dependency", "SessionDep")
 
-SQLITE_FILENAME = "db.sqlite"
 
-engine = create_engine(
-    f"sqlite:///{SQLITE_FILENAME}", connect_args={"check_same_thread": False}
-)
+engine: Engine
 
 
 def init_dependency() -> None:
+    global engine
+    uri = os.environ.get("DB_URI")
+    if not uri:
+        return
+
+    engine = create_engine(uri, connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
 
 
