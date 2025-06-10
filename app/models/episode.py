@@ -1,10 +1,7 @@
 from typing import Literal
 
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
-
-from app.exceptions import APIException, handled_error
 
 
 class PodcastEpisode(SQLModel):
@@ -27,29 +24,3 @@ class AltEpisodeResponse(BaseModel):
     target: Literal["title", "description"]
     prompt: str
     generated_alternative: str
-
-
-@handled_error
-class EpisodeExists(APIException):
-    def __init__(self, title: str) -> None:
-        self.title = title
-
-    def into_json(self) -> JSONResponse:
-        return JSONResponse(
-            status_code=409,
-            content={"message": f"Episode with title `{self.title}` already exists."},
-        )
-
-
-@handled_error
-class EpisodeNotFound(APIException):
-    def __init__(self, id: int) -> None:
-        self.id = id
-
-    def into_json(self) -> JSONResponse:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "message": f"Episode with id {self.id} could not have been found."
-            },
-        )

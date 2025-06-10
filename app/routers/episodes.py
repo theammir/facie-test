@@ -1,18 +1,44 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 from sqlmodel import select
 
 from app.dependencies.database import SessionDep
 from app.dependencies.llm import LLMDep, LLMException
+from app.exceptions import APIException, handled_error
 from app.models.episode import (
     AltEpisodeRequest,
     AltEpisodeResponse,
-    EpisodeExists,
-    EpisodeNotFound,
     PodcastEpisode,
     PodcastEpisodeDB,
 )
 
 router = APIRouter()
+
+
+@handled_error
+class EpisodeExists(APIException):
+    def __init__(self, title: str) -> None:
+        self.title = title
+
+    def into_json(self) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
+            content={"message": f"Episode with title `{self.title}` already exists."},
+        )
+
+
+@handled_error
+class EpisodeNotFound(APIException):
+    def __init__(self, id: int) -> None:
+        self.id = id
+
+    def into_json(self) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": f"Episode with id {self.id} could not have been found."
+            },
+        )
 
 
 @router.get("/episodes")
