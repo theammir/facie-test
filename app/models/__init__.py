@@ -1,1 +1,1 @@
-from .episode import PodcastEpisode
+from .episode import *

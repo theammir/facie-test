@@ -1,31 +1,30 @@
 from fastapi import APIRouter, status
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import select
 
-from .. import exceptions
-from ..dependencies.database import SessionDep
-from ..models import PodcastEpisode
+from app import exceptions
+from app.dependencies.database import SessionDep
+from app.models.episode import PodcastEpisode, PodcastEpisodeDB
 
 router = APIRouter()
 
 
 @router.get("/episodes")
-async def get_episodes(session: SessionDep) -> list[PodcastEpisode]:
-    return list(session.exec(select(PodcastEpisode)).all())
+async def get_episodes(session: SessionDep) -> list[PodcastEpisodeDB]:
+    return list(session.exec(select(PodcastEpisodeDB)).all())
 
 
-@router.post("/episodes", status_code=status.HTTP_201_CREATED)
-async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEpisode:
-    episode_exists = True
-    try:
-        session.get_one(PodcastEpisode, episode.title)
-    except NoResultFound:
-        episode_exists = False
-
-    if episode_exists:
+@router.post(
+    "/episodes",
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEpisodeDB:
+    if session.exec(
+        select(PodcastEpisodeDB).where(PodcastEpisodeDB.title == episode.title)
+    ).first():
         raise exceptions.EpisodeExists(episode.title)
 
-    session.add(episode)
+    db_episode = PodcastEpisodeDB.model_validate(episode)
+    session.add(db_episode)
     session.commit()
-    session.refresh(episode)
-    return episode
+    session.refresh(db_episode)
+    return db_episode
