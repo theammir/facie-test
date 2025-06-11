@@ -15,7 +15,6 @@
 
 ## Potential features and nitpicks 🌙
 
-* #### Make custom exceptions show up in Swagger docs
 * #### Make more things configurable for production use
 * #### Some clever caching
 * #### Rate-limiting of expensive operations (.../generate_alternative) 
@@ -96,11 +95,14 @@ Test via `pytest`.
 
 ## Development thoughts 💡
 
-There's usually a long rant here. I really like writing READMEs because they make my work feel substantial at a glance.
+There's usually a long rant here. I really like writing READMEs because they
+make my work feel substantial at a glance.
 
-First things that I addressed before actually implementing features are exceptions and DI:
-I discovered that there's no automated handling of custom exceptions in FastAPI, so I
-made an abstract interface for one to be able to convert into `JSONResponse`, and made a simple decorator to generate a handler for it.
+First things that I addressed before actually implementing features are
+exceptions and DI: I discovered that there's no automated handling of custom
+exceptions in FastAPI, so I made an abstract interface for one to be able to
+convert into `JSONResponse`, and made a simple decorator to generate a handler
+for it.
 ```python
 @handled_error
 class EpisodeExists(APIException):
@@ -117,12 +119,16 @@ class EpisodeExists(APIException):
             content={"message": f"Episode with title `{self.title}` already exists."},
         )
 ```
+Making these show up in Swagger docs still takes additional manual effort, though.
 
-For dependency injection, I created a separate package, where each exports dependencies and can optionally define `init_dependency`.
-All modules are listed in the package `__init__.py`, and the app initializes them during startup.
-This is not necessarily the best approach, as it's either documented or nobody ever knows about it when writing new dependencies.
+For dependency injection, I created a separate package, where each exports
+dependencies and can optionally define `init_dependency`. All modules are
+listed in the package `__init__.py`, and the app initializes them during
+startup. This is not necessarily the best approach, as it's either documented
+or nobody ever knows about it when writing new dependencies.
 
-For an LLM prompter, that is also injected, I thought that it would be unwise to inject a third-party directly, so I abstracted it as:
+For an LLM prompter, that is also injected, I thought that it would be unwise
+to inject a third-party directly, so I abstracted it as:
 ```python
 class LLMPrompter(abc.ABC):
     @abc.abstractmethod
@@ -130,4 +136,6 @@ class LLMPrompter(abc.ABC):
 
 LLMDep = Annotated[LLMPrompter, Depends(get_prompter)]
 ```
-That way, it's possible to define a concrete `DeepSeekPrompter` and create it inside `get_prompter`, without ever changing the contract that API handlers use.
+That way, it's possible to define a concrete `DeepSeekPrompter` and create it
+inside `get_prompter`, without ever changing the contract that API handlers
+use.

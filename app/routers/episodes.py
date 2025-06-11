@@ -8,6 +8,7 @@ from app.exceptions import APIException, handled_error
 from app.models.episode import (
     AltEpisodeRequest,
     AltEpisodeResponse,
+    ErrorResponse,
     PodcastEpisode,
     PodcastEpisodeDB,
 )
@@ -60,6 +61,12 @@ async def get_episodes(session: SessionDep) -> list[PodcastEpisodeDB]:
 @router.post(
     "/episodes",
     status_code=status.HTTP_201_CREATED,
+    responses={
+        409: {
+            "model": ErrorResponse,
+            "description": "Episode with similar title already exists",
+        },
+    },
 )
 async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEpisodeDB:
     """
@@ -77,7 +84,16 @@ async def add_episode(episode: PodcastEpisode, session: SessionDep) -> PodcastEp
     return db_episode
 
 
-@router.post("/episodes/{episode_id}/generate_alternative")
+@router.post(
+    "/episodes/{episode_id}/generate_alternative",
+    responses={
+        404: {
+            "model": ErrorResponse,
+            "description": "Episode with this ID couldn't have been found",
+        },
+        500: {"model": ErrorResponse, "description": "Couldn't get the LLM's response"},
+    },
+)
 async def generate_alternative(
     episode_id: int, payload: AltEpisodeRequest, session: SessionDep, llm: LLMDep
 ) -> AltEpisodeResponse:

@@ -24,3 +24,7 @@ class AltEpisodeResponse(BaseModel):
     target: Literal["title", "description"]
     prompt: str
     generated_alternative: str
+
+
+class ErrorResponse(BaseModel):
+    message: str
