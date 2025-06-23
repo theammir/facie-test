@@ -27,7 +27,7 @@ class EpisodeExists(APIException):
 
     def into_json(self) -> JSONResponse:
         return JSONResponse(
-            status_code=409,
+            status_code=self.status_code,
             content={"message": f"Episode with title `{self.title}` already exists."},
         )
 
@@ -43,7 +43,7 @@ class EpisodeNotFound(APIException):
 
     def into_json(self) -> JSONResponse:
         return JSONResponse(
-            status_code=404,
+            status_code=self.status_code,
             content={
                 "message": f"Episode with id {self.id} could not have been found."
             },

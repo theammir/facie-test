@@ -43,7 +43,7 @@ class LLMException(APIException):
 
     def into_json(self) -> JSONResponse:
         return JSONResponse(
-            status_code=500,
+            status_code=self.status_code,
             content={"message": f"Unexpected server error: {self.message}"},
         )
 
